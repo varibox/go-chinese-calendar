@@ -348,8 +348,8 @@ func Test_lunarDays(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if gotDays := lunarDays(tt.args.year, tt.args.month); gotDays != tt.wantDays {
-				t.Errorf("lunarDays() = %v, want %v", gotDays, tt.wantDays)
+			if gotDays := LunarDays(tt.args.year, tt.args.month); gotDays != tt.wantDays {
+				t.Errorf("LunarDays() = %v, want %v", gotDays, tt.wantDays)
 			}
 		})
 	}

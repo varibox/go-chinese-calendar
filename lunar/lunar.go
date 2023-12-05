@@ -80,7 +80,7 @@ func FromSolarTimestamp(ts int64) (lunarYear, lunarMonth, lunarDay int64, lunarM
 	offset = (t1.Unix() - t2.Unix()) / 86400
 
 	for i = 1900; i < 2101 && offset > 0; i++ {
-		daysOfYear = daysOfLunarYear(i)
+		daysOfYear = DaysOfLunarYear(i)
 		offset -= daysOfYear
 	}
 	if offset < 0 {
@@ -91,7 +91,7 @@ func FromSolarTimestamp(ts int64) (lunarYear, lunarMonth, lunarDay int64, lunarM
 	// 农历年
 	lunarYear = i
 	// 闰哪个月
-	leap = leapMonth(i)
+	leap = LeapMonth(i)
 
 	isLeap = false
 
@@ -102,10 +102,10 @@ func FromSolarTimestamp(ts int64) (lunarYear, lunarMonth, lunarDay int64, lunarM
 			i--
 			isLeap = true
 			// 计算农历月天数
-			daysOfMonth = leapDays(lunarYear)
+			daysOfMonth = LeapDays(lunarYear)
 		} else {
 			// 计算农历普通月天数
-			daysOfMonth = lunarDays(lunarYear, i)
+			daysOfMonth = LunarDays(lunarYear, i)
 		}
 		// 解除闰月
 		if true == isLeap && i == (leap+1) {
@@ -146,7 +146,7 @@ func ToSolarTimestamp(year, month, day, hour, minute, second int64, isLeapMonth 
 		return 0
 	}
 	// 参数区间 1900.1.31~2100.12.1
-	m := leapMonth(year)
+	m := LeapMonth(year)
 	// 传参要求计算该闰月公历 但该年得出的闰月与传参的月份并不同
 	if isLeapMonth && (m != month) {
 		isLeapMonth = false
@@ -155,11 +155,11 @@ func ToSolarTimestamp(year, month, day, hour, minute, second int64, isLeapMonth 
 	if 2100 == year && 12 == month && day > 1 || 1900 == year && 1 == month && day < 31 {
 		return 0
 	}
-	days := lunarDays(year, month)
+	days := LunarDays(year, month)
 	maxDays := days
-	// if month is leap, _day use leapDays method
+	// if month is leap, _day use LeapDays method
 	if isLeapMonth {
-		maxDays = leapDays(year)
+		maxDays = LeapDays(year)
 	}
 	// 参数合法性效验
 	if day > maxDays {
@@ -168,19 +168,19 @@ func ToSolarTimestamp(year, month, day, hour, minute, second int64, isLeapMonth 
 	// 计算农历的时间差
 	offset = 0
 	for i = 1900; i < year; i++ {
-		offset += daysOfLunarYear(i)
+		offset += DaysOfLunarYear(i)
 	}
 	isAdd := false
 	for i = 1; i < month; i++ {
-		leap := leapMonth(year)
+		leap := LeapMonth(year)
 		if !isAdd {
 			// 处理闰月
 			if leap <= i && leap > 0 {
-				offset += leapDays(year)
+				offset += LeapDays(year)
 				isAdd = true
 			}
 		}
-		offset += lunarDays(year, i)
+		offset += LunarDays(year, i)
 	}
 	// 转换闰月农历 需补充该年闰月的前一个月的时差
 	if isLeapMonth {
@@ -195,7 +195,7 @@ func ToSolarTimestamp(year, month, day, hour, minute, second int64, isLeapMonth 
 
 // LeapMonth 获取闰月(0表示不闰, 5表示闰五月)
 func (lunar *Lunar) LeapMonth() int64 {
-	return leapMonth(lunar.year)
+	return LeapMonth(lunar.year)
 }
 
 // IsLeap 是否闰年
@@ -269,7 +269,7 @@ func (lunar *Lunar) Equals(b *Lunar) bool {
 		lunar.IsLeapMonth() == b.IsLeapMonth()
 }
 
-func daysOfLunarYear(year int64) int64 {
+func DaysOfLunarYear(year int64) int64 {
 	var (
 		i, sum int64
 	)
@@ -279,15 +279,15 @@ func daysOfLunarYear(year int64) int64 {
 			sum++
 		}
 	}
-	return sum + leapDays(year)
+	return sum + LeapDays(year)
 }
 
-func leapMonth(year int64) int64 {
+func LeapMonth(year int64) int64 {
 	return lunars[year-1900] & 0xf
 }
 
-func leapDays(year int64) (days int64) {
-	if leapMonth(year) == 0 {
+func LeapDays(year int64) (days int64) {
+	if LeapMonth(year) == 0 {
 		days = 0
 	} else if (lunars[year-1900] & 0x10000) != 0 {
 		days = 30
@@ -297,7 +297,7 @@ func leapDays(year int64) (days int64) {
 	return
 }
 
-func lunarDays(year, month int64) (days int64) {
+func LunarDays(year, month int64) (days int64) {
 	if month > 12 || month < 1 {
 		days = 0
 	} else if (lunars[year-1900] & (0x10000 >> uint64(month))) != 0 {
