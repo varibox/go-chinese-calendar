@@ -1,3 +1,3 @@
-module github.com/Lofanmi/chinese-calendar-golang
+module github.com/varibox/go-chinese-calendar
 
 go 1.16
